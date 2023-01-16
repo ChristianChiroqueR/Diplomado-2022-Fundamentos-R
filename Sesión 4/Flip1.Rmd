@@ -1,0 +1,629 @@
+---
+title: "Visualización de datos con ggplot2"
+subtitle: "Visualización de datos con R"
+author: "Christian Chiroque Ruiz"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: [useR, useR-fonts]
+    nature:
+      ratio: 16:9
+      highlightStyle: github
+      highlightLines: false
+      countIncrementalSlides: false
+---
+
+
+```{r, include = F}
+# This is the recommended set up for flipbooks
+# you might think about setting cache to TRUE as you gain practice --- building flipbooks from scratch can be time consuming
+knitr::opts_chunk$set(fig.width = 6, message = FALSE, warning = FALSE, comment = "", cache = F)
+library(tidyverse)
+library(flipbookr)
+library(xaringanExtra)
+use_xaringan_extra("animate_css")
+```
+
+layout: true
+class: animated, fadeIn
+
+---
+
+
+class: inverse
+
+# ¿Dónde estamos en el curso?
+
+
+- Introducción a la Ciencia de Datos
+
+
+- Funciones e introducción al Tidyverse
+
+
+- Tidyverse: Manipulación de datos con {dplyr} 
+
+
+- **Tidyverse: Visualización de datos con {ggplot2}**
+
+
+- Datos perdidos
+ 
+
+---
+
+# ggplot2
+
+Es un sistema organizado de visualización de datos. Forma parte del conjunto de librerías llamado *tidyverse*. 
+
+```
+install.packages("tidyverse") # Sólo si lo necesitas
+library(tidyverse)
+```
+
+La primera versión del paquete fue liberada por Hadley Wickham el 10 de junio de 2007, desde entonces el paquete se ha enriquecido con diferentes elementos. 
+
+Ggplot2 se ha convertido en el paquete de creación de visualizaciones más popular en el universo R por permitir de manera sencilla obtener gráficos de alta calidad. Incluso [otros programas de Data Science carecen de una herramienta como ggplot2](https://towardsdatascience.com/how-to-use-ggplot2-in-python-74ab8adec129).
+
+---
+
+# Gramática de ggplot2
+
+
+.pull-left[
+
+- La gramática del ggplot2 se basa en el libro The Grammar of Graphics 
+
+- A diferencia de los gráficos con el paquete base donde creamos un gráfico a base de pasos sucesivos, ggplot2 se basa en una gramática de gráficos, añadiendo elementos a un graphical device , donde distintos componentes independientes se pueden combinar de muchas maneras diferentes.
+
+]
+
+
+.pull-right[
+
+![](https://m.media-amazon.com/images/I/41T80eRz+aL._SY344_BO1,204,203,200_.jpg)
+
+]
+
+---
+
+class: center
+
+# Son 7 capas principales
+
+![](https://miro.medium.com/max/1100/1*l844RJyls1FraalChUtneQ.webp)
+
+
+---
+
+
+# 1ra Capa: Data
+
+Es la materia prima sobre la cual se van a posicionar el resto de capas y los datos que se desean representar. 
+
+El ggplot2 sólo acepta un tipo de datos: data.frames/ tibbles. No permite *vectores*.
+
+Vamos a utilizar la data del paquete {gapminder}.
+
+
+
+---
+
+
+# 1ra Capa: Data
+
+
+```{r}
+#install.packages("gapminder")
+library(gapminder)
+data<-gapminder::gapminder
+head(data, 3)
+```
+
+
+---
+
+# 2da Capa: Aesthetics ("Estéticas")
+
+```
+aes()
+```
+
+- Indican las variables que se van a graficar, tanto en el **eje horizontal** (x) como en el **eje vertical** (y).
+
+- Ggplo2 no está pensado para gráficos tridimensionales, pero ciertamente podemos incluir una tercera variable, por ejemplo, indicando el **color** si deseamos identificar grupos, o indicando el tamaño (de los puntos en un scatterplot) para agregar una nueva variable cuantitativa.
+
+
+
+
+---
+
+# 3ra Capa: Geometric Objects (Objetos geométricos)
+
+- Funciones: geom_line(), geom_boxplot(), etc.
+
+- Indica qué tipo de gráfico (geometría) se va a construir: gráfico de barras, columnas, puntos, histográmas, boxplots, líneas, densidad, entre otros. 
+
+- En el paquete {ggplot2} existen 30 geometrías disponibles. Puedes ver el detalle de estos en la [documentación del paquete](https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf).
+
+- Cada geometría tiene su propia función y, como ya hemos visto, cada una puede tener distintos argumentos. 
+
+
+
+---
+class: inverse, middle, center
+
+# Estas 3 capas son el mínimo necesario para hacer un gráfico: 
+
+ Data +
+ Aesthetics +
+ Geometries
+ 
+ 
+ 
+---
+
+`r chunk_reveal("chunk_1", title = "Recuerda los pasos básicos")`
+
+```{r chunk_1, include = FALSE}
+data %>% #BREAK
+  ggplot() + #BREAK
+  aes(x = lifeExp) + #BREAK
+  geom_histogram() 
+```
+ 
+
+---
+
+`r chunk_reveal("primer_chunk", break_type = "rotate",title = "Probemos con argumentos y otras geometrías univariadas")`
+
+```{r primer_chunk, include = FALSE}
+data %>% 
+  ggplot() + 
+  aes(x = lifeExp) + 
+  geom_histogram(binwidth=5,color="white")  #ROTATE
+  geom_boxplot()  #ROTATE
+  geom_boxplot(notch=TRUE,color="blue") #ROTATE
+```
+
+---
+
+`r chunk_reveal("chunk_3", title = "Ahora probemos con gráficos bivariados")`
+
+```{r chunk_3, include = FALSE}
+data %>% 
+  ggplot() + 
+  aes(x = lifeExp) + 
+  aes(y = gdpPercap) +
+  geom_point() +
+  aes(color=continent) +
+  geom_smooth()
+```
+ 
+
+---
+
+`r chunk_reveal("chunk_4", title = "Mezclemos otras funciones del tidyverse y más de un gráfico")`
+
+```{r chunk_4, include = FALSE}
+data %>% 
+  filter(country=="Peru", year>1960) %>% 
+  ggplot() + 
+  aes(x = year) + 
+  aes(y = gdpPercap) +
+  geom_line()+
+  geom_point()
+```
+ 
+
+
+---
+
+`r chunk_reveal("chunk_7", title = "Y el gráfico de barras?")`
+
+```{r chunk_7, include = FALSE}
+data %>% 
+  select(country,continent) %>%
+  group_by(continent) %>% 
+  filter(!duplicated(country)) %>% 
+  ungroup() %>% 
+  ggplot()+
+  aes(x=continent) +
+  geom_bar()
+```
+ 
+
+---
+
+`r chunk_reveal("chunk_8", title = "Y el gráfico de barras apiladas?")`
+
+```{r chunk_8, include = FALSE}
+data %>% 
+  select(-4, -5) %>% 
+  mutate(gdp_cat=case_when(
+              gdpPercap<4000~ "Bajo GDPpc", 
+              TRUE~ "Alto GDPpc")) %>% 
+  filter(year==2007) %>% 
+  ggplot()+
+  aes(x=continent, fill=gdp_cat) +
+  geom_bar()
+```
+
+
+
+---
+
+`r chunk_reveal("chunk_9", break_type = "user", title = "Puedes colocar grupos en uno de los ejes para gráficos univariados")`
+
+```{r chunk_9, include = FALSE}
+data %>% 
+  select(-4, -5) %>% 
+  mutate(gdp_cat=case_when(
+    gdpPercap<4000~ "Bajo GDPpc", 
+    TRUE~ "Alto GDPpc")) %>% 
+  filter(year==2007) %>% #BREAK
+  ggplot()+ #BREAK
+  aes(x=continent)+ 
+  aes(y=gdpPercap) +
+  aes(color=continent) + #BREAK
+  geom_boxplot()
+```
+
+
+
+---
+
+`r chunk_reveal("chunk_12", break_type = "user", title = "Separando grupos por color")`
+
+```{r chunk_12, include = FALSE}
+data %>% 
+  filter(continent=="Oceania") %>% 
+  ggplot()+
+  aes(x=year) +
+  aes(y=lifeExp) +#BREAK
+  aes(color=country) +#BREAK
+  geom_line() +
+  geom_point()
+```
+
+
+---
+
+`r chunk_reveal("chunk_13", break_type = "user", title = "Separando grupos sin color")`
+
+```{r chunk_13, include = FALSE}
+data %>% 
+  filter(continent=="Oceania") %>% 
+  ggplot()+
+  aes(x=year) +
+  aes(y=lifeExp) +#BREAK
+  aes(group=country) +#BREAK
+  geom_line() +
+  geom_point()
+```
+
+
+
+---
+class: inverse, center, middle
+
+
+# Ahora vayamos con las demás capas!
+
+
+---
+
+# 4ta Capa: Facets (Facetas)
+
+.pull-left[
+
+- Permite descomponer un gráfico en subgráficos, también llamadas cuadrículas o facetas, según una variable **cualitativa**.
+
+- Sirve para comparar grupos, separándolos y así facilitando la identificación de diferencias significativas entre estos. 
+
+]
+
+
+.pull-right[
+
+![](http://www.sthda.com/sthda/RDoc/figure/ggplot2/ggplot2-facet-facet-with-one-variable-1.png)
+
+]
+
+
+---
+
+`r chunk_reveal("chunk_5", break_type = "user", title = "Utilizamos facet_wrap para separar la figura por las categorías de UNA variable cualitativa")`
+
+```{r chunk_5, include = FALSE}
+data %>% 
+  ggplot() + 
+  aes(x = lifeExp) + 
+  aes(y = gdpPercap) +
+  geom_point() +
+  aes(color=continent) + #BREAK
+  facet_wrap(~continent)
+```
+ 
+
+---
+
+`r chunk_reveal("chunk_6", break_type = "user", title = "Usamos facet_grid() para cruzar las categorías de dos variables cualitativas")`
+
+```{r chunk_6, include = FALSE}
+data %>% 
+  filter(continent %in% c("Africa","Americas", "Europe")) %>% 
+  filter(year==2007) %>% 
+  mutate(gdp_cat=case_when(gdpPercap<4000~ "Bajo GDPpc", 
+                           TRUE~ "Alto GDPpc")) %>% 
+  ggplot() + 
+  aes(x = lifeExp) + 
+  aes(y = gdpPercap) +
+  geom_point() +
+  aes(color=continent) + #BREAK
+  facet_grid(cols = vars(continent), rows = vars(gdp_cat))
+```
+ 
+
+
+---
+
+# 5ta Capa: Statistical Transformations (Tranformaciones Estadísticas)
+
+- Permite adicionar indicadores o estadísticos específicos calculados a partir de los datos de insumo. 
+
+- Por ejemplo, se puede colocar la media de una variable numérica. 
+
+
+
+---
+
+`r chunk_reveal("chunk_11", break_type = "user", title = "Podemos graficar haciendo uso de stat_summary")`
+
+```{r chunk_11, include = FALSE}
+data %>% 
+    mutate(gdp_cat=case_when(
+    gdpPercap<4000~ "Bajo GDPpc", 
+    TRUE~ "Alto GDPpc")) %>% 
+    filter(year==2007) %>% 
+    ggplot()+#BREAK
+    aes(x=continent, group=gdp_cat, color=gdp_cat)+#BREAK
+    stat_summary(aes(y=gdpPercap),
+               fun ="mean", 
+               geom="point") +#BREAK
+    stat_summary(aes(y=gdpPercap),
+               fun ="mean", 
+               geom="line") 
+```
+
+
+---
+
+`r chunk_reveal("chunk_10", break_type = "user", title = "Podemos agregarlo encima de otro gráfico")`
+
+```{r chunk_10, include = FALSE}
+data %>% 
+  select(-4, -5) %>% 
+  mutate(gdp_cat=case_when(
+    gdpPercap<4000~ "Bajo GDPpc", 
+    TRUE~ "Alto GDPpc")) %>% 
+  filter(year==2007) %>% 
+  ggplot()+ 
+  aes(x=continent)+ aes(y=gdpPercap) +
+  aes(color=continent) + 
+  geom_boxplot()+#BREAK
+  stat_summary(fun ="mean", 
+               colour="red", 
+               size = 5,
+               geom="point") +#BREAK
+  stat_summary(fun ="median", 
+               colour="blue", 
+               size = 5,
+               geom="point")
+```
+
+
+
+
+---
+
+# 6ta Capa: Coordinates (Coordinadas)
+
+- Sirve para especificar cómo será presentada la información de las variables en los ejes horizontal y vertical. 
+
+
+---
+
+`r chunk_reveal("chunk_19", break_type = "user", title = "Cambiamos la escala de uno de los ejes")`
+
+```{r chunk_19, include = FALSE}
+data %>% 
+  filter(continent=="Asia", year==2007) %>% 
+  ggplot()+
+  aes(x = gdpPercap, y = lifeExp,
+      size = pop, color = country) %>% 
+  geom_point(show.legend = F, alpha = 0.7) +#BREAK
+  scale_x_log10() +#BREAK
+  labs(x = 'GDP Per Capita',
+       y = 'Life Expectancy')
+```
+
+
+
+
+---
+
+# 7ma Capa: Themes
+
+- Funciones: theme_gray(), theme_bw(), theme_classic()
+
+- Es la capa que le da la apariencia final que tendrá el gráfico. 
+
+- Se utiliza para personalizar el estilo del gráfico, pues [modifica elementos del gráfico](https://ggplot2.tidyverse.org/reference/theme.html) no ligados a los datos. 
+
+- Se puede crear un tema para que se adapte a la imagen institucional de una organización o al tipo de diseño de un documento específico. 
+
+- Se modifican temas tales como el color del fondo, los ejes, tamaño del gráfico, grilla, posición de los nombres, entre otros. 
+
+
+
+---
+
+`r chunk_reveal("chunk_17", break_type = "rotate", title = "Cambiamos los temas de un gráfico de acuerdo a nuestro gusto")`
+
+```{r chunk_17, include = TRUE}
+data %>% 
+  filter(continent=="Asia", year==2007) %>% 
+  ggplot()+
+  aes(x = gdpPercap, y = lifeExp,
+      size = pop, color = country) %>% 
+  geom_point(show.legend = F, alpha = 0.7) +
+  scale_x_log10() +
+  labs(x = 'GDP Per Capita',
+       y = 'Life Expectancy') +
+  scale_size(range = c(2, 15))+
+  theme_gray()+#ROTATE
+  theme_bw() +#ROTATE
+  theme_classic() #ROTATE
+```
+
+
+
+---
+
+class: inverse, center, middle
+
+# Extensiones de ggplot2
+
+Hay mucho más!
+
+120 extensiones disponibles en:
+
+https://exts.ggplot2.tidyverse.org/gallery/
+
+---
+# gganimate
+
+- Amplía la gramática de gráficos implementada por ggplot2 para incluir la descripción de la animación. 
+
+- Proporciona una gama de nuevas clases de gramática que se pueden agregar al objeto de la trama para personalizar cómo debe cambiar con el tiempo.
+
+```{r message=FALSE, warning=FALSE}
+# install.packages("gganimate")
+library(gganimate)
+#Consider installing:
+#- the `gifski` package for gif output
+#- the `av` package for video output
+```
+
+---
+
+`r chunk_reveal("chunk_14", break_type = "user", title = "Primero generamos un gráfico")`
+
+```{r chunk_14, include = TRUE}
+data %>% 
+  ggplot()+
+  aes(x = gdpPercap, y = lifeExp,
+      size = pop, color = country) + 
+  geom_point(show.legend = F, alpha = 0.7) +
+  scale_x_log10() +
+  labs(x = 'GDP Per Capita',
+       y = 'Life Expectancy') +
+  scale_size(range = c(2, 15))#BREAK
+
+```
+
+
+
+---
+
+`r chunk_reveal("chunk_15", break_type = "user", title = "Luego le añadimos la transición animada y lo personalizamos")`
+
+```{r chunk_15, include = TRUE}
+data %>% 
+  ggplot()+
+  aes(x = gdpPercap, y = lifeExp,
+      size = pop, color = country) + 
+  geom_point(show.legend = F, alpha = 0.7) +
+  scale_x_log10() +
+  labs(x = 'GDP Per Capita',
+       y = 'Life Expectancy') +
+  scale_size(range = c(2, 15)) + #BREAK
+  transition_time(year)+ #BREAK
+  labs(title = "Producto Bruto Interno vs Esperanza de Vida",
+       subtitle = "Year:{frame_time}") + #BREAK
+  shadow_wake(0.5)
+
+```
+
+
+
+---
+# ggrepel
+
+
+- Proporciona geoms de texto y etiquetas para 'ggplot2' que ayudan a evitar la superposición de etiquetas de texto. 
+
+- Las etiquetas se repelen unas de otras y se alejan de los puntos de datos.
+
+```{r}
+# install.packages("ggrepel")
+library(ggrepel)
+```
+
+
+---
+
+`r chunk_reveal("chunk_16", break_type = "rotate", title = "Vemos la diferencia entre ggplot2::geom_text() y repel::geom_text_repel()")`
+
+```{r chunk_16, include = TRUE}
+data %>% 
+  filter(continent=="Americas", year==2007) %>% 
+  ggplot()+
+  aes(x = gdpPercap, y = lifeExp, label=country) +
+  geom_point(show.legend = F, alpha = 0.7) +
+  scale_x_log10() +
+  labs(x = 'GDP Per Capita',
+       y = 'Life Expectancy') +
+  scale_size(range = c(2, 15)) +
+  geom_text() + #ROTATE
+  geom_text_repel(max.overlaps=15) #ROTATE
+```
+
+---
+
+# Notas finales: 
+
+- Puedes ver todos los detalles de ggplot2 en la guía elaborada por el mismo Posit:
+
+https://github.com/rstudio/cheatsheets/blob/main/data-visualization.pdf
+
+- Te recomiendo que explores más sobre las extensiones del ggplot2 y también sobre los argumentos de cada una de las funciones vistas en clase. 
+
+- Qué gráficos has necesitado en tu día a día o te gustaría construir? Seguramente hay un paquete para ello en R. 
+
+
+
+<!-- adjust font size in this css code chunk, currently 80 -->
+
+```{css, eval = TRUE, echo = FALSE}
+.remark-code{line-height: 1.5; font-size: 90%}
+
+@media print {
+  .has-continuation {
+    display: block;
+  }
+}
+
+code.r.hljs.remark-code{
+  position: relative;
+  overflow-x: hidden;
+}
+
+
+code.r.hljs.remark-code:hover{
+  overflow-x:visible;
+  width: 500px;
+  border-style: solid;
+}
+```
